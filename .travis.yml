@@ -1,0 +1,22 @@
+language: generic
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build -t hsj1202/react-test-app -f ./frontend/Dockerfile.dev ./frontend
+
+script:
+  - docker run -e CI=true hsj1202/react-test-app npm test
+
+after_success:
+  - docker build -t hsj1202/docker-frontend ./frontend
+  - docker build -t hsj1202/docker-backend ./backend
+  - docker build -t hsj1202/docker-nginx ./nginx
+
+  - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_ID" --password-stdin
+
+  - docker push hsj1202/docker-frontend
+  - docker push hsj1202/docker-backend
+  - docker push hsj1202/docker-nginx
